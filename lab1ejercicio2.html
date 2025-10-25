@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 2 - Buscador de Pokémon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        #resultado {
+            margin-top: 20px;
+        }
+        .pokemon-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .pokemon-card img {
+            width: 200px;
+            height: 200px;
+        }
+        .pokemon-card h2 {
+            margin: 10px 0;
+            color: #333;
+            text-transform: capitalize;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .stat {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .tipos {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .tipo {
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .loading { color: #666; text-align: center; }
+        .error { color: red; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Buscador de Pokémon</h1>
+        <div class="search-box">
+            <input type="text" id="pokemonInput" placeholder="Ingresa el nombre o número (ej: pikachu o 25)">
+            <button id="buscarBtn">Buscar</button>
+        </div>
+        <div id="resultado"></div>
+        <div id="mensajeError"></div>
+    </div>
+
+    <script>
+        // TU CÓDIGO AQUÍ
+        const buscarBtn = document.getElementById('buscarBtn');
+const pokemonInput = document.getElementById('pokemonInput');
+const resultadoDiv = document.getElementById('resultado');
+
+buscarBtn.addEventListener('click', buscarPokemon);
+
+// Permitir buscar con Enter
+pokemonInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') buscarPokemon();
+});
+
+function buscarPokemon() {
+    const nombre = pokemonInput.value.trim().toLowerCase();
+    
+    // Validación: verificar que no esté vacío
+    if (!nombre) {
+        resultadoDiv.innerHTML = '<p class="error">Por favor ingresa un nombre o número</p>';
+        return;
+    }
+    
+    // Mostrar estado de carga
+    resultadoDiv.innerHTML = '<p class="loading">Buscando pokémon...</p>';
+    
+    // URL de la API: https://pokeapi.co/api/v2/pokemon/NOMBRE_O_NUMERO
+    const url = `https://pokeapi.co/api/v2/pokemon/${nombre}`
+    // COMPLETA AQUÍ: Hacer la petición fetch con promesas
+    // 1. Hacer fetch a la URL
+    // 2. Verificar que respuesta.ok sea true
+    // 3. Convertir a JSON
+    // 4. Llamar a mostrarPokemon(pokemon)
+    // 5. Capturar errores
+    fetch(url)
+    .then(respuesta => {
+        if(!respuesta.ok){
+            throw new Error(`HTTP error: status: ${respuesta.status}`)
+        }
+        return respuesta.json()
+    })
+    .then(pokemon => {
+        mostrarPokemon(pokemon)
+    })
+    .catch(error => {
+        document.getElementById('mensajeError').innerHTML = `<p>Error: ${error.message}</p>`;
+    });
+}
+
+function mostrarPokemon(pokemon) {
+    // Obtener tipos del pokémon
+    const tipos = pokemon.types.map(tipo => tipo.type.name);
+    
+    // Crear el HTML
+    const html = `
+        <div class="pokemon-card">
+            <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+            <h2>${pokemon.name}</h2>
+            <div class="tipos">
+                ${tipos.map(tipo => `<span class="tipo" style="background: #${getTipoColor(tipo)}">${tipo}</span>`).join('')}
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <strong>Altura:</strong> ${pokemon.height / 10} m
+                </div>
+                <div class="stat">
+                    <strong>Peso:</strong> ${pokemon.weight / 10} kg
+                </div>
+                <div class="stat">
+                    <strong>Experiencia Base:</strong> ${pokemon.base_experience}
+                </div>
+                <div class="stat">
+                    <strong>Habilidades:</strong> ${pokemon.abilities.length}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    resultadoDiv.innerHTML = html;
+}
+
+function getTipoColor(tipo) {
+    const colores = {
+        normal: 'A8A878', fire: 'F08030', water: '6890F0',
+        electric: 'F8D030', grass: '78C850', ice: '98D8D8',
+        fighting: 'C03028', poison: 'A040A0', ground: 'E0C068',
+        flying: 'A890F0', psychic: 'F85888', bug: 'A8B820',
+        rock: 'B8A038', ghost: '705898', dragon: '7038F8',
+        dark: '705848', steel: 'B8B8D0', fairy: 'EE99AC'
+    };
+    return colores[tipo] || '777777';
+}
+    </script>
+</body>
+</html>

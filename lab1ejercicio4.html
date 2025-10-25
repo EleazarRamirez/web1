@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 4 - Blog de Posts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .controles {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        select, button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #posts {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .post {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .post h3 {
+            color: #333;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+        .post p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .comentarios-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .comentarios-btn:hover {
+            background: #0b7dda;
+        }
+        .comentarios {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+            display: none;
+        }
+        .comentarios.visible {
+            display: block;
+        }
+        .comentario {
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .comentario:last-child {
+            border-bottom: none;
+        }
+        .comentario h4 {
+            color: #2196F3;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .comentario p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+        .loading { color: #666; }
+        .error { color: #f44336; }
+        .badge {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Blog de Posts</h1>
+            <div class="controles">
+                <select id="usuarioSelect">
+                    <option value="">Selecciona un usuario...</option>
+                </select>
+                <button id="cargarBtn">Cargar Posts</button>
+                <button id="cargarTodosBtn">Cargar Todos los Posts</button>
+            </div>
+        </header>
+        
+        <div id="posts"></div>
+    </div>
+
+    <script>
+        // TU CÓDIGO AQUÍ
+        const usuarioSelect = document.getElementById('usuarioSelect');
+const cargarBtn = document.getElementById('cargarBtn');
+const postsDiv = document.getElementById('posts');
+const cargarTodosBtn = document.getElementById('cargarTodosBtn');
+cargarTodosBtn.addEventListener('click', cargarTodosLosPosts);
+
+// Al cargar la página, obtener la lista de usuarios para el select
+window.addEventListener('load', cargarUsuarios);
+cargarBtn.addEventListener('click', cargarPosts);
+
+function cargarUsuarios() {
+    // COMPLETA AQUÍ: Cargar usuarios desde la API
+    // URL: https://jsonplaceholder.typicode.com/users
+    // Por cada usuario, crear un <option> en el select
+    // Ejemplo: <option value="1">Leanne Graham</option>
+    
+    fetch('https://jsonplaceholder.typicode.com/users')
+        .then(respuesta => respuesta.json())
+        .then(usuarios => {
+            usuarios.forEach(usuario => {
+                const option = document.createElement('option');
+                option.value = usuario.id;
+                option.textContent = usuario.name;
+                usuarioSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error al cargar usuarios:', error);
+        });
+}
+
+function cargarPosts() {
+    const usuarioId = usuarioSelect.value;
+    
+    if (!usuarioId) {
+        alert('Por favor selecciona un usuario');
+        return;
+    }
+    
+    postsDiv.innerHTML = '<p class="loading">Cargando posts...</p>';
+    
+    // COMPLETA AQUÍ: Cargar posts del usuario seleccionado
+    // URL: https://jsonplaceholder.typicode.com/posts?userId=${usuarioId}
+    // Usar promesas con .then()
+    // Llamar a mostrarPosts(posts)
+    // Manejar errores
+    const url = `https://jsonplaceholder.typicode.com/posts?userId=${usuarioId}`
+   
+    return fetch(url)
+    .then(respuesta => {
+        if(!respuesta.ok){
+            throw new Error(`HTTP error: status: ${respuesta.status}`)
+        }
+        return respuesta.json();
+    })
+    .then(posts => mostrarPosts(posts))
+    .catch(error => {
+        postsDiv.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+    });
+
+}
+
+function cargarTodosLosPosts() {
+    postsDiv.innerHTML = '<p class="loading">Cargando todos los posts...</p>'
+    const url = 'https://jsonplaceholder.typicode.com/posts'
+    fetch(url)
+    .then(respuesta => {
+        if(!respuesta.ok){
+            throw new Error(`HTTP error: status: ${respuesta.status}`)
+        }
+        return respuesta.json();
+    })
+    .then(posts => mostrarPosts(posts))
+    .catch(error => {
+        postsDiv.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+    })
+}
+
+function mostrarPosts(posts) {
+    if (posts.length === 0) {
+        postsDiv.innerHTML = '<p class="error">Este usuario no tiene posts</p>';
+        return;
+    }
+    
+    const html = posts.map(post => `
+        <div class="post" id="post-${post.id}">
+            <h3>${post.title}</h3>
+            <p>${post.body}</p>
+            <button class="comentarios-btn" onclick="cargarComentarios(${post.id})">
+                Ver Comentarios 💬
+            </button>
+            <span class="badge" id="badge-${post.id}">...</span>
+            <div class="comentarios" id="comentarios-${post.id}">
+                <p class="loading">Cargando comentarios...</p>
+            </div>
+        </div>
+    `).join('');
+    
+    postsDiv.innerHTML = html;
+    
+    // Cargar el número de comentarios para cada post
+    posts.forEach(post => {
+        contarComentarios(post.id);
+    });
+}
+
+function contarComentarios(postId) {
+    // COMPLETA AQUÍ: Obtener la cantidad de comentarios
+    // URL: https://jsonplaceholder.typicode.com/posts/POST_ID/comments
+    // Actualizar el badge con la cantidad: document.getElementById(`badge-${postId}`).textContent = cantidad
+    const url = `https://jsonplaceholder.typicode.com/posts/${postId}/comments`;
+    fetch(url)
+    .then(respuesta => {
+        if(!respuesta.ok){
+            throw new Error(`HTTP error: status: ${respuesta.status}`)
+        }
+        return respuesta.json();
+    })
+    .then(comentarios => {
+        document.getElementById(`badge-${postId}`).textContent = `${comentarios.length}`;
+    })
+    .catch(error => {
+        document.getElementById('mensajeError').innerHTML = `<p>Error: ${error.message}</p>`;
+    })
+}
+
+function cargarComentarios(postId) {
+    const comentariosDiv = document.getElementById(`comentarios-${postId}`);
+    
+    // Toggle: si ya está visible, ocultarlo
+    if (comentariosDiv.classList.contains('visible')) {
+        comentariosDiv.classList.remove('visible');
+        return;
+    }
+    
+    // COMPLETA AQUÍ: Cargar comentarios del post
+    // URL: https://jsonplaceholder.typicode.com/posts/POST_ID/comments
+    // Mostrar los comentarios en comentariosDiv
+    // Agregar clase 'visible' para mostrar el div
+    // Usar la función mostrarComentarios(comentarios, comentariosDiv)
+    comentariosDiv.innerHTML = '<p class="loading"> Cargando comentarios...</p>'
+    const url = `https://jsonplaceholder.typicode.com/posts/${postId}/comments`
+    fetch(url)
+    .then(respuesta => respuesta.json())
+    .then(comentarios => {
+        mostrarComentarios(comentarios, comentariosDiv);
+    })
+    .catch(error => {
+        comentariosDiv.innerHTML = `<p class="error">❌ Error al cargar comentarios: ${error.message}</p>`
+    })
+}
+
+function mostrarComentarios(comentarios, contenedor) {
+    const html = comentarios.map(comentario => `
+        <div class="comentario">
+            <h4>📧 ${comentario.email}</h4>
+            <p><strong>${comentario.name}</strong></p>
+            <p>${comentario.body}</p>
+        </div>
+    `).join('');
+    
+    contenedor.innerHTML = html;
+    contenedor.classList.add('visible');
+}
+    </script>
+</body>
+</html>
