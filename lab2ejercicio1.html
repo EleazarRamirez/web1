@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 1 - Generador de Perfiles Aleatorios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        select, button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        select {
+            flex: 1;
+            background: white;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        #resultado {
+            min-height: 200px;
+        }
+        .perfil {
+            text-align: center;
+        }
+        .perfil img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid #667eea;
+            margin-bottom: 20px;
+        }
+        .perfil h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: left;
+        }
+        .info p {
+            margin: 8px 0;
+            color: #666;
+        }
+        .info strong {
+            color: #333;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+        .error {
+            text-align: center;
+            padding: 20px;
+            background: #fee;
+            color: #c33;
+            border-radius: 10px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👤 Generador de Perfiles</h1>
+        
+        <div class="controls">
+            <select id="generoSelect">
+                <option value="">Cualquier género</option>
+                <option value="male">Masculino</option>
+                <option value="female">Femenino</option>
+            </select>
+            <button id="generarBtn">Generar</button>
+        </div>
+        
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        const generarBtn = document.getElementById('generarBtn');
+        const generoSelect = document.getElementById('generoSelect');
+        const resultadoDiv = document.getElementById('resultado');
+
+        generarBtn.addEventListener('click', generarPerfil);
+
+        // TU CÓDIGO AQUÍ
+        // Implementa la función generarPerfil() usando async/await
+        
+        async function generarPerfil() {
+            // Paso 1: Mostrar loading
+            mostrarLoading();
+            
+            // Paso 2: Obtener el género seleccionado
+            const genero = generoSelect.value;
+            
+            // Paso 3: Construir la URL
+            // Base: https://randomuser.me/api/
+            // Si hay género: https://randomuser.me/api/?gender=male
+            let url = "https://randomuser.me/api/";
+            if(genero) {
+                url+= `?gender=${genero}`
+            }
+            
+            try {
+                // Paso 4: Hacer la petición con await fetch
+                const repuesta = await fetch(url);
+                // Paso 5: Verificar que la respuesta sea exitosa
+                if(!repuesta.ok){
+                    throw new Error('Error: HTTP')
+                }
+                // Paso 6: Convertir a JSON con await
+                const datos = await repuesta.json();
+                // Paso 7: Extraer el primer usuario del array results
+                const usuario = datos.results[0];
+                // Paso 8: Llamar a mostrarPerfil(usuario)
+                mostrarPerfil(usuario);
+            } catch (error) {
+                // Paso 9: Manejar errores
+
+                mostrarError(error.message);
+            }
+        }
+
+        function mostrarLoading() {
+            resultadoDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Generando perfil...</p>
+                </div>
+            `;
+        }
+
+        function mostrarPerfil(usuario) {
+            const html = `
+                <div class="perfil">
+                    <img src="${usuario.picture.large}" alt="${usuario.name.first}">
+                    <h2>${usuario.name.first} ${usuario.name.last}</h2>
+                    <div class="info">
+                        <p><strong>📧 Email:</strong> ${usuario.email}</p>
+                        <p><strong>📱 Teléfono:</strong> ${usuario.phone}</p>
+                        <p><strong>🎂 Edad:</strong> ${usuario.dob.age} años</p>
+                        <p><strong>📍 Ciudad:</strong> ${usuario.location.city}, ${usuario.location.country}</p>
+                        <p><strong>🏠 Dirección:</strong> ${usuario.location.street.number} ${usuario.location.street.name}</p>
+                        <p><strong>👤 Usuario:</strong> @${usuario.login.username}</p>
+                    </div>
+                </div>
+            `;
+            
+            resultadoDiv.innerHTML = html;
+        }
+
+        function mostrarError(mensaje) {
+            resultadoDiv.innerHTML = `
+                <div class="error">
+                    <h3>❌ Error</h3>
+                    <p>${mensaje}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
