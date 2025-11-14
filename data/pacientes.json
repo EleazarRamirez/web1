@@ -1,0 +1,36 @@
+{
+  "pacientes": [
+    {
+      "id": "P002",
+      "nombre": "Eleazar González",
+      "edad": 35,
+      "telefono": "555-0101",
+      "email": "eleazar.g@email.com",
+      "fechaRegistro": "2025-01-15"
+    },
+    {
+      "id": "P003",
+      "nombre": "Eleazar ramirez",
+      "edad": 24,
+      "telefono": "555-0101",
+      "email": "eleazar.r@email.com",
+      "fechaRegistro": "2025-11-11"
+    },
+    {
+      "id": "P004",
+      "nombre": "juan ramirez",
+      "edad": 24,
+      "telefono": "555-0101",
+      "email": "juan.r@email.com",
+      "fechaRegistro": "2025-11-10"
+    },
+    {
+      "id": "P005",
+      "nombre": "Dario Mendez S.",
+      "edad": 15,
+      "telefono": "6464518756",
+      "email": "dario.m@email.com",
+      "fechaRegistro": "2025-11-14"
+    }
+  ]
+}
