@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 3 - Información de Países</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #2a5298;
+            margin-bottom: 30px;
+        }
+        .controles {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        input, select {
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            flex: 1;
+            min-width: 200px;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #1e3c72;
+        }
+        #resultado {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .pais-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .pais-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .pais-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .pais-info {
+            padding: 15px;
+        }
+        .pais-info h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .pais-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+        }
+        .loading { color: #2a5298; }
+        .error { color: #d32f2f; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Explorador de Países</h1>
+        
+        <div class="controles">
+            <input type="text" id="nombreInput" placeholder="Buscar por nombre (ej: Mexico)">
+            <select id="regionSelect">
+                <option value="">Todas las regiones</option>
+                <option value="africa">África</option>
+                <option value="americas">América</option>
+                <option value="asia">Asia</option>
+                <option value="europe">Europa</option>
+                <option value="oceania">Oceanía</option>
+            </select>
+            <button id="buscarBtn">Buscar</button>
+        </div>
+        
+        <div id="resultado"></div>
+        <div id="mensajeError"></div>
+    </div>
+
+    <script>
+        // TU CÓDIGO AQUÍ
+        const buscarBtn = document.getElementById('buscarBtn');
+const nombreInput = document.getElementById('nombreInput');
+const regionSelect = document.getElementById('regionSelect');
+const resultadoDiv = document.getElementById('resultado');
+
+buscarBtn.addEventListener('click', buscarPaises);
+
+nombreInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') buscarPaises();
+});
+
+function buscarPaises() {
+    const nombre = nombreInput.value.trim();
+    const region = regionSelect.value;
+    
+    // Determinar qué tipo de búsqueda hacer
+    let url;
+    
+    if (nombre) {
+        // Buscar por nombre
+        url = `https://restcountries.com/v3.1/name/${nombre}`;
+    } else if (region) {
+        // Buscar por región
+        url = `https://restcountries.com/v3.1/region/${region}`;
+    } else {
+        // Si no hay filtros, obtener todos los países
+        url = 'https://restcountries.com/v3.1/all';
+    }
+    
+    resultadoDiv.innerHTML = '<p class="loading">🔄 Cargando países...</p>';
+    
+    // COMPLETA AQUÍ: Hacer la petición fetch con promesas
+    // 1. Hacer fetch a la URL
+    // 2. Verificar respuesta.ok
+    // 3. Convertir a JSON
+    // 4. Limitar a los primeros 12 países si son muchos
+    // 5. Llamar a mostrarPaises(paises)
+    // 6. Manejar errores (país no encontrado, error de red, etc.)
+    fetch(url)
+    .then(respuesta => {
+        if(!respuesta.ok){
+            throw new Error(`HTTP error: status: ${respuesta.status}`)
+        }
+        return respuesta.json();
+    })
+    .then(paises => {
+        const limite12paises = paises.slice(0,12);
+         mostrarPaises(limite12paises);
+    }
+    )
+    .catch(error => {
+        document.getElementById('mensajeError').innerHTML = `<p>Error: ${error.message} pais no encon</p>`;
+    })
+}
+
+function mostrarPaises(paises) {
+    if (paises.length === 0) {
+        resultadoDiv.innerHTML = '<p class="error">No se encontraron países</p>';
+        return;
+    }
+    
+    const html = paises.map(pais => `
+        <div class="pais-card">
+            <img src="${pais.flags.png}" alt="Bandera de ${pais.name.common}">
+            <div class="pais-info">
+                <h3>${pais.name.common}</h3>
+                <p><strong>Capital:</strong> ${pais.capital ? pais.capital[0] : 'N/A'}</p>
+                <p><strong>Región:</strong> ${pais.region}</p>
+                <p><strong>Población:</strong> ${pais.population.toLocaleString()}</p>
+                <p><strong>Idiomas:</strong> ${pais.languages ? Object.values(pais.languages).join(', ') : 'N/A'}</p>
+                <p><strong>Moneda:</strong> ${pais.currencies ? Object.values(pais.currencies)[0].name : 'N/A'}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    resultadoDiv.innerHTML = html;
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 4 - Buscador de Libros</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ecf0f1;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            padding: 40px 0;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #f39c12;
+        }
+        .buscador {
+            background: #34495e;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .search-box {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background: #2c3e50;
+            color: white;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-buscar {
+            background: #f39c12;
+            color: #2c3e50;
+        }
+        .btn-buscar:hover {
+            background: #e67e22;
+        }
+        .filtros {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filtros label {
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        .filtros select {
+            padding: 8px;
+            border-radius: 5px;
+            background: #2c3e50;
+            color: white;
+            border: 1px solid #f39c12;
+        }
+        #resultados {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .libro-card {
+            background: #34495e;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .libro-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(243, 156, 18, 0.3);
+        }
+        .libro-cover {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            background: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .libro-cover img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .no-cover {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+        .libro-info {
+            padding: 20px;
+        }
+        .libro-info h3 {
+            color: #f39c12;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        .libro-info p {
+            margin: 8px 0;
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+        .autor {
+            color: #3498db;
+            font-weight: bold;
+        }
+        .btn-detalles {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-detalles:hover {
+            background: #2980b9;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 24px;
+            color: #f39c12;
+        }
+        .error {
+            text-align: center;
+            padding: 40px;
+            background: #e74c3c;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #34495e;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+            border-radius: 20px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #f39c12;
+        }
+        .modal-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .modal-cover {
+            width: 200px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .modal-info h2 {
+            color: #f39c12;
+            margin-bottom: 15px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-box {
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .spinner {
+            border: 6px solid #34495e;
+            border-top: 6px solid #f39c12;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Biblioteca Digital</h1>
+            <p style="font-size: 20px;">Explora millones de libros</p>
+        </header>
+
+        <div class="buscador">
+            <div class="search-box">
+                <input type="text" id="busquedaInput" placeholder="Buscar libros, autores, temas...">
+                <button class="btn-buscar" id="buscarBtn">🔍 Buscar</button>
+            </div>
+            <div class="filtros">
+                <label>Ordenar por:</label>
+                <select id="ordenSelect">
+                    <option value="relevance">Relevancia</option>
+                    <option value="rating">Calificación</option>
+                    <option value="year">Año</option>
+                </select>
+                
+                <label>Límite:</label>
+                <select id="limiteSelect">
+                    <option value="10">10 resultados</option>
+                    <option value="20">20 resultados</option>
+                    <option value="50">50 resultados</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="resultados"></div>
+    </div>
+
+    <!-- Modal para detalles del libro -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="cerrarModal()">&times;</span>
+            <div id="modalContenido"></div>
+        </div>
+    </div>
+
+    <script>
+        const buscarBtn = document.getElementById('buscarBtn');
+        const busquedaInput = document.getElementById('busquedaInput');
+        const ordenSelect = document.getElementById('ordenSelect');
+        const limiteSelect = document.getElementById('limiteSelect');
+        const resultadosDiv = document.getElementById('resultados');
+        const modal = document.getElementById('modal');
+        const modalContenido = document.getElementById('modalContenido');
+
+        buscarBtn.addEventListener('click', buscarLibros);
+        busquedaInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') buscarLibros();
+        });
+
+        // Búsqueda inicial
+        window.addEventListener('load', () => {
+            busquedaInput.value = 'javascript';
+            buscarLibros();
+        });
+
+        // TU CÓDIGO AQUÍ
+        // Implementa las funciones usando async/await
+
+        async function buscarLibros() {
+            const query = busquedaInput.value.trim();
+            
+            if (!query) {
+                alert('Por favor ingresa un término de búsqueda');
+                return;
+            }
+            
+            resultadosDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Buscando libros...</p>
+                </div>
+            `;
+            
+            const LIMITE = limiteSelect.value;
+            const ORDEN = ordenSelect.value;
+            
+            // URL de búsqueda de Open Library
+            // Base: https://openlibrary.org/search.json
+            // Parámetros: ?q=QUERY&limit=LIMITE
+            // Ejemplo: https://openlibrary.org/search.json?q=javascript&limit=10
+            const baseurl = "https://openlibrary.org/search.json"
+            const params = new URLSearchParams();
+            params.append('q', query);
+            if(LIMITE) params.append('limit', LIMITE);
+            
+            const url = `${baseurl}?${params}`;
+            
+            try {
+                // COMPLETA AQUÍ:
+                // 1. Construir URL con query y límite
+                // 2. Hacer fetch con await
+                const respuesta = await fetch(url);
+                // 3. Verificar respuesta.ok
+                if(!respuesta.ok){
+                    throw new Error(`Error en la solicitud: HTTP ${respuesta.status}`);
+                }
+                // 4. Convertir a JSON con await
+                const datos = await respuesta.json();
+                // 5. Extraer el array de libros (datos.docs)
+                const libros = datos.docs;
+                // 6. Filtrar libros que tengan cover_i (portada)
+                const librosFiltrados = libros.filter(libro => libro.cover_i);
+                // 7. Ordenar según el filtro seleccionado
+                libros.sort((a,b) => {
+                    if(ORDEN === 'titulo'){
+                        //ordenamos alfabeticamente por titulo
+                        return a.title.localeCompare(b.title);
+                    }else if(ORDEN === 'fecha'){
+                        //ordenamos por año 
+                        return (b.first_publish_year || 0) - (a.first_publish_year || 0);
+                    }
+                    return 0;
+                })
+                // 8. Llamar a mostrarLibros(libros)
+                mostrarLibros(libros)
+                
+            } catch (error) {
+                resultadosDiv.innerHTML = `
+                    <div class="error">
+                        <h3>📕 Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function mostrarLibros(libros) {
+            if (libros.length === 0) {
+                resultadosDiv.innerHTML = `
+                    <div class="error">
+                        <h3>📕 No se encontraron libros</h3>
+                        <p>Intenta con otro término de búsqueda</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = libros.map(libro => {
+                const portada = libro.cover_i 
+                    ? `https://covers.openlibrary.org/b/id/${libro.cover_i}-M.jpg`
+                    : null;
+                    
+                return `
+                    <div class="libro-card" onclick="verDetalles('${libro.key}')">
+                        ${portada 
+                            ? `<div class="libro-cover"><img src="${portada}" alt="${libro.title}"></div>`
+                            : `<div class="no-cover">📖</div>`
+                        }
+                        <div class="libro-info">
+                            <h3>${libro.title}</h3>
+                            <p class="autor">✍️ ${libro.author_name ? libro.author_name.join(', ') : 'Autor desconocido'}</p>
+                            <p>📅 ${libro.first_publish_year || 'Año desconocido'}</p>
+                            ${libro.publisher ? `<p>🏢 ${libro.publisher[0]}</p>` : ''}
+                            <button class="btn-detalles" onclick="event.stopPropagation(); verDetalles('${libro.key}')">
+                                Ver Detalles
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            resultadosDiv.innerHTML = html;
+        }
+
+        async function verDetalles(libroKey) {
+            // COMPLETA AQUÍ:
+            // 1. Abrir el modal
+            // 2. Mostrar loading en el modal
+            // 3. Hacer fetch a: https://openlibrary.org${libroKey}.json
+            // 4. Obtener detalles del libro
+            // 5. Llamar a mostrarDetallesModal(detalles)
+            
+            modal.style.display = 'block';
+            modalContenido.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Cargando detalles...</p>
+                </div>
+            `;
+            const url = `https://openlibrary.org${libroKey}.json`;
+            try {
+                // Tu código aquí
+                const respuesta = await fetch(url);
+                if(!respuesta.ok){
+                    throw new Error(`Error de respuesta HTTP: ${respuesta.status}`)
+                }
+                const libro = await respuesta.json();
+                mostrarDetallesModal(libro);
+            } catch (error) {
+                modalContenido.innerHTML = `
+                    <div class="error">
+                        <p>Error al cargar detalles: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function mostrarDetallesModal(libro) {
+            const portada = libro.covers && libro.covers[0]
+                ? `https://covers.openlibrary.org/b/id/${libro.covers[0]}-L.jpg`
+                : null;
+
+            const html = `
+                <div class="modal-header">
+                    ${portada ? `<img src="${portada}" class="modal-cover" alt="${libro.title}">` : ''}
+                    <div class="modal-info">
+                        <h2>${libro.title}</h2>
+                        <p style="color: #3498db; font-size: 18px; margin-bottom: 10px;">
+                            ${libro.authors ? libro.authors.map(a => a.name || 'Autor desconocido').join(', ') : 'Autor desconocido'}
+                        </p>
+                        <p style="margin: 10px 0;">${libro.description ? (typeof libro.description === 'string' ? libro.description : libro.description.value) : 'Sin descripción disponible'}</p>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <strong>📅 Primera publicación:</strong><br>
+                        ${libro.first_publish_date || 'Desconocido'}
+                    </div>
+                    <div class="stat-box">
+                        <strong>📄 Páginas:</strong><br>
+                        ${libro.number_of_pages || 'Desconocido'}
+                    </div>
+                    <div class="stat-box">
+                        <strong>🏢 Editorial:</strong><br>
+                        ${libro.publishers ? libro.publishers.join(', ') : 'Desconocido'}
+                    </div>
+                    <div class="stat-box">
+                        <strong>🏷️ ISBN:</strong><br>
+                        ${libro.isbn_10 ? libro.isbn_10[0] : libro.isbn_13 ? libro.isbn_13[0] : 'No disponible'}
+                    </div>
+                </div>
+                
+                ${libro.subjects ? `
+                    <div style="margin-top: 20px;">
+                        <strong>📚 Temas:</strong>
+                        <p style="margin-top: 10px; color: #bdc3c7;">${libro.subjects.slice(0, 10).join(', ')}</p>
+                    </div>
+                ` : ''}
+            `;
+
+            modalContenido.innerHTML = html;
+        }
+
+        function cerrarModal() {
+            modal.style.display = 'none';
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        }
+    </script>
+</body>
+</html>
